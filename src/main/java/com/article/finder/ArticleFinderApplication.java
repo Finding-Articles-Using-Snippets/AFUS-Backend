@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 import java.sql.*;
 
 @SpringBootApplication
-public class ArticleFinderApplication implements CommandLineRunner {
+public class ArticleFinderApplication {
 
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
@@ -27,7 +27,7 @@ public class ArticleFinderApplication implements CommandLineRunner {
 		System.out.println("started");
 	}
 
-	@Override
+	/*@Override
 	public void run(String... args) throws Exception{
 		System.out.println(dataSource);
 
@@ -90,7 +90,7 @@ public class ArticleFinderApplication implements CommandLineRunner {
 			}//end try
 			System.out.println("Goodbye!");
 		//end main
-	}//end JDBCExample
+	}*/
 
 	}
 
