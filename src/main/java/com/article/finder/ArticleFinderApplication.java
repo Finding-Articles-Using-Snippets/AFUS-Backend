@@ -1,12 +1,16 @@
 package com.article.finder;
 
 import ch.qos.logback.core.net.SyslogOutputStream;
+import com.google.cloud.firestore.Firestore;
+import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.sql.*;
 
@@ -25,6 +29,12 @@ public class ArticleFinderApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ArticleFinderApplication.class, args);
 		System.out.println("started");
+	}
+
+	@Bean
+	@PostConstruct
+	public Firestore firestoreBean(){
+		return FirestoreClient.getFirestore();
 	}
 
 	/*@Override

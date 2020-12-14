@@ -17,7 +17,7 @@ public class FBinitialize {
     public void initialize() {
         try{
 
-            File file = ResourceUtils.getFile("classpath:db-spring-afus-firebase-adminsdk-7q8pp-2f7790f262.json");
+            File file = ResourceUtils.getFile("classpath:article-finder-bb398-firebase-adminsdk-6fxyp-28a9af4743.json");
 
             FileInputStream serviceAccount =
                     new FileInputStream(file);
@@ -35,3 +35,5 @@ public class FBinitialize {
     }
 
 }
+
+
