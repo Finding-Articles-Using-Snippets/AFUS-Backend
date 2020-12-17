@@ -30,12 +30,12 @@ from services.fuzzy import get_fuzzy_similarity
 from services.files import getPdf, getDictionary
 
 # downloading the large model 
-subprocess.call("python -m spacy download en_core_web_lg",shell=True)
+#subprocess.call("python -m spacy download en_core_web_lg",shell=True)
 nlp = spacy.load("en_core_web_lg")
 print("Loaded language model")
 
 # getting model
-import models.user
+from models.user import User
 
 @app.post('/api/keywords', tags=['Extraction'])
 def get_keywords(user: User):
