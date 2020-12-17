@@ -3,7 +3,7 @@ import spacy
 import subprocess
 from string import punctuation
 
-def extract_keywords(nlp, sequence, special_tags : list = None):
+def extract_keywords(nlp, sequence : list = None):
     """ Takes a Spacy core language model,
     string sequence of text and optional
     list of special tags as arguments.
@@ -31,14 +31,6 @@ def extract_keywords(nlp, sequence, special_tags : list = None):
     # create a spacy doc object by calling the nlp object on the input sequence
     doc = nlp(sequence.lower())
 
-    # if special tags are given and exist in the input sequence
-    # add them to results by default
-    if special_tags:
-        tags = [tag.lower() for tag in special_tags]
-        for token in doc:
-            if token.text in tags:
-                result.append(token.text)
-    
     for chunk in doc.noun_chunks:
         final_chunk = ""
         for token in chunk:

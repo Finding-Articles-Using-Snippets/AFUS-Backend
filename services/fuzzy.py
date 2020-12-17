@@ -17,6 +17,7 @@ def get_fuzzy_similarity(token = None, dictionary = None):
         return process.extractBests(token, dictionary, scorer= ratio, score_cutoff=70)
     else:
         return []
+        
 if __name__ == "__main__":
   # toy dictionary of words we will query our mispelt input against
   word_dictionary = ['medium','twitter','google','linkedIn','facebook']

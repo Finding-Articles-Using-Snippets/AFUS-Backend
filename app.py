@@ -1,35 +1,64 @@
+# Processes
 import spacy
-from flask import Flask, request, jsonify
-from flask_cors import CORS, cross_origin
-from extract_keywords import extract_keywords
-from fuzzy import get_fuzzy_similarity
 import subprocess
 
-# if you want to download the large model 
-# subprocess.call("python -m spacy download en_core_web_lg",shell=True)
-subprocess.call("python -m spacy download en_core_web_sm",shell=True)
+# Server
+import uvicorn
+from fastapi import FastAPI
+from fastapi.encoders import jsonable_encoder
 
-app = Flask(__name__)
-CORS(app)
+tags_metadata = [
+    {
+        "name": "Extraction",
+        "description": "Operations with extraction of keywords.",
+    },
+    {
+        "name": "Welcome",
+        "description": "Just a welcome here."
+    },
+]
 
-# if you want to load the large model 
-# nlp = spacy.load("en_core_web_lg")
-nlp = spacy.load("en_core_web_sm")
+app = FastAPI(
+    title="AFUS API",
+    description="AFUS API",
+    version="0.0.1",
+)
+
+# Services
+from services.extract_keywords import extract_keywords
+from services.fuzzy import get_fuzzy_similarity
+from services.files import getPdf, getDictionary
+
+# downloading the large model 
+subprocess.call("python -m spacy download en_core_web_lg",shell=True)
+nlp = spacy.load("en_core_web_lg")
 print("Loaded language model")
 
-@app.route('/api/keywords', methods=['POST'])
-def get_keywords():
-    query_string = request.json.get("query_string")
-    tags = request.json.get("tags")
-    keywords = extract_keywords(nlp,query_string,tags)
-    return jsonify(keywords = keywords)
+# getting model
+import models.user
 
-@app.route('/api/fuzzy-matches', methods=['POST'])
-def get_fuzzy_matches():
-    token = request.json.get("token")
-    dictionary = request.json.get("dictionary")
-    similar_words = get_fuzzy_similarity(token,dictionary)
-    return jsonify(similar_words = similar_words)
+@app.post('/api/keywords', tags=['Extraction'])
+def get_keywords(user: User):
+    query_string = getPdf(user.user_id, user.file_id)
+    keywords = extract_keywords(nlp,query_string)
+    return jsonable_encoder({
+        "keywords" : keywords,
+        "status": True
+        })
+
+@app.post('/api/search', tags=['Extraction'])
+def get_fuzzy_matches(user: User):
+    search = user.search
+    dictionary = getDictionary(user.user_id)
+    similar_words = get_fuzzy_similarity(search,dictionary)
+    return jsonable_encoder(similar_words = similar_words)
+
+@app.get("/status", tags = ['Welcome'])
+def home():
+    return {
+        "status": "True",
+        "message": "OK!"
+        }
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=5002)
