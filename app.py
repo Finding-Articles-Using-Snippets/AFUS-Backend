@@ -29,46 +29,35 @@ app = FastAPI(
 )
 
 # Services
-from services.extract_keywords import extract_keywords
-from services.fuzzy import get_fuzzy_similarity
-from services.files import getPdf, getDictionary
-
-# downloading the large model 
-#subprocess.call("python -m spacy download en_core_web_lg",shell=True)
-nlp = spacy.load("en_core_web_lg")
-print("Loaded language model")
+from test import get_results, store_vector
 
 # getting model
 from models.user import User
-
-
-# Initialize Firestore DB
-from firebase_admin import credentials, firestore, initialize_app
-
-cred = credentials.Certificate('secret_key.json')
-default_app = initialize_app(cred)
-db = firestore.client()
-pdfs_ref = db.collection('pdfs')
-user_pdf_ref = db.collection('usersPDF')
+from models.search import Search
 
 @app.post('/api/keywords', tags=['Extraction'])
 def get_keywords(user: User):
-
-    query_string = getPdf(user.user_id, user.file_id)
-    keywords = extract_keywords(nlp,query_string)
+    status = store_vector(user.user_id, user.file_id)
+    if status:
+        return jsonable_encoder({
+            "status": True
+            })
     return jsonable_encoder({
-        "status": True
+        "status": False
         })
 
+
 @app.post('/api/search', tags=['Search'])
-def get_fuzzy_matches(user: User):
-    search = user.search
-    dictionary = getDictionary(user.user_id)
-    pdfs = get_fuzzy_similarity(search,dictionary)
+def get_fuzzy_matches(user: Search):
+    pdfs = get_results(user.user_id,user.search)
+    if pdfs:
+        return jsonable_encoder({
+            'pdfs' : pdfs,
+            'status': True
+        })
     return jsonable_encoder({
-        'pdfs' : pdfs,
-        'status': True
-    })
+            'status': False
+        })
 
 @app.get("/status", tags = ['Welcome'])
 def home():
@@ -76,9 +65,6 @@ def home():
         "status": "True",
         "message": "OK!"
         }
-
-
-
 
 if __name__ == '__main__':
     uvicorn.run("app:app", host="0.0.0.0", port=5002)
