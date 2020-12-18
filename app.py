@@ -13,6 +13,10 @@ tags_metadata = [
         "description": "Operations with extraction of keywords.",
     },
     {
+        "name": "Search",
+        "description": "Files Search Engine.",
+    },
+    {
         "name": "Welcome",
         "description": "Just a welcome here."
     },
@@ -44,24 +48,27 @@ from firebase_admin import credentials, firestore, initialize_app
 cred = credentials.Certificate('secret_key.json')
 default_app = initialize_app(cred)
 db = firestore.client()
-user_ref = db.collection('users')
 pdfs_ref = db.collection('pdfs')
+user_pdf_ref = db.collection('usersPDF')
 
 @app.post('/api/keywords', tags=['Extraction'])
 def get_keywords(user: User):
+
     query_string = getPdf(user.user_id, user.file_id)
     keywords = extract_keywords(nlp,query_string)
     return jsonable_encoder({
-        "keywords" : keywords,
         "status": True
         })
 
-@app.post('/api/search', tags=['Extraction'])
+@app.post('/api/search', tags=['Search'])
 def get_fuzzy_matches(user: User):
     search = user.search
     dictionary = getDictionary(user.user_id)
-    similar_words = get_fuzzy_similarity(search,dictionary)
-    return jsonable_encoder(similar_words = similar_words)
+    pdfs = get_fuzzy_similarity(search,dictionary)
+    return jsonable_encoder({
+        'pdfs' : pdfs,
+        'status': True
+    })
 
 @app.get("/status", tags = ['Welcome'])
 def home():
