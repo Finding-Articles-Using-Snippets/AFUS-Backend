@@ -2,6 +2,11 @@ from firebase_admin import credentials, firestore, initialize_app
 import pickle
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer, CountVectorizer 
+from io import StringIO
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfpage import PDFPage
 
 cred = credentials.Certificate('secret_key.json')
 default_app = initialize_app(cred)
@@ -10,8 +15,6 @@ user_ref = db.collection('users')
 pdfs_ref = db.collection('pdfs')
 user_pdf_ref = db.collection('usersPDF')
 
-user = user_pdf_ref.document("e8IMLRvCImOhjM1rNyP0Jb5gcTV2").get()
-print(user.to_dict())
 
 def get_results(uid,query):
 
@@ -37,7 +40,30 @@ def get_results(uid,query):
 def store_vector(uid,file):
 
     vectorizer = pickle.load(open("tfidf1.pkl", 'rb'))
-    # Append to user
+
+    user_pdf_ref.update({u'pid': firestore.ArrayUnion([file])})
+
     file_details = pdfs_ref.document(file).get().to_dict()
-    file_vec = vectorizer.transform(file)
+    url = file_details['pdfUrl']
+    urllib.request.urlretrieve(url, "download.pdf")
+    infile = open('download.pdf', 'rb')
+
+    output = StringIO()
+    manager = PDFResourceManager()
+    converter = TextConverter(manager, output, laparams=LAParams())
+    interpreter = PDFPageInterpreter(manager, converter)
+
+    for page in PDFPage.get_pages(infile):
+        interpreter.process_page(page)
+    converter.close()
+    text = output.getvalue()
+    output.close
+
     
+    file_vec = vectorizer.transform([text])
+    file_vec_dic = dict(file_vec.todok().items())
+    file_vec_dic = {k[1],v for k,v in file_vec_dic}
+    
+    pdfs_ref.update({u'vector': file_vec_dic})
+
+    return True
