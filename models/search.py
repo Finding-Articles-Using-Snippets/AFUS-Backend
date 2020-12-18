@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 
-class User(BaseModel):
+class Search(BaseModel):
     user_id: str
-    file_id: str
-
+    search: str
