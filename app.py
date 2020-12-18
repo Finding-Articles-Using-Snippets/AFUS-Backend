@@ -35,7 +35,7 @@ from test import get_results, store_vector
 from models.user import User
 from models.search import Search
 
-@app.post('/api/keywords', tags=['Extraction'])
+@app.post('/api/files', tags=['Extraction'])
 def get_keywords(user: User):
     status = store_vector(user.user_id, user.file_id)
     if status:
