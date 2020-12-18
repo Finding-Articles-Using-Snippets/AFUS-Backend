@@ -37,6 +37,16 @@ print("Loaded language model")
 # getting model
 from models.user import User
 
+
+# Initialize Firestore DB
+from firebase_admin import credentials, firestore, initialize_app
+
+cred = credentials.Certificate('secret_key.json')
+default_app = initialize_app(cred)
+db = firestore.client()
+user_ref = db.collection('users')
+pdfs_ref = db.collection('pdfs')
+
 @app.post('/api/keywords', tags=['Extraction'])
 def get_keywords(user: User):
     query_string = getPdf(user.user_id, user.file_id)
